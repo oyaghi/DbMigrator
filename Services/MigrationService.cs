@@ -19,5 +19,7 @@ public class MigrationService(
                 FROM INFORMATION_SCHEMA.TABLES
                 WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME NOT LIKE '%migration%' 
             """, cancellationToken);
+
+        await dbPreparationService.PrepareTargetDbAsync(tablesInfo.ToList(), targetConnectionString, cancellationToken);
     }
 }

@@ -7,7 +7,7 @@ namespace DbMigrator.Services;
 
 public class DbPreparationService(IDbConnectionFactory dbConnectionFactory) : IDbPreparationService
 {
-    public async Task<bool> PrepareTargetDbAsync(List<TableInfo> sourceInfo, string targetConnectionString, bool isMigrationApplied = false, CancellationToken cancellationToken = default)
+    public async Task<bool> PrepareTargetDbAsync(List<TableInfo> sourceInfo, string targetConnectionString, CancellationToken cancellationToken = default)
     {
         using var targetConn = dbConnectionFactory.CreateConnection(targetConnectionString);
         targetConn.Open();
@@ -22,7 +22,8 @@ public class DbPreparationService(IDbConnectionFactory dbConnectionFactory) : ID
     {
         foreach (var tableInfo in tablesInfo)
         {
-            await targetConn.ExecuteAsync($"DELETE FROM [{tableInfo.Schema}].[{tableInfo.Name}]");        }
+            await targetConn.ExecuteAsync($"DELETE FROM [{tableInfo.Schema}].[{tableInfo.Name}]");
+        }
     }
 
     private static async Task ToggleConstraintsAsync(IDbConnection conn, List<TableInfo> tablesInfo, bool enable)
