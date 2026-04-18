@@ -9,38 +9,34 @@ public class DbPreparationService(IDbConnectionFactory dbConnectionFactory) : ID
 {
     public async Task<bool> PrepareTargetDbAsync(List<TableInfo> sourceInfo, string targetConnectionString, bool isMigrationApplied = false, CancellationToken cancellationToken = default)
     {
-        var targetConn = dbConnectionFactory.CreateConnection(targetConnectionString);
+        using var targetConn = dbConnectionFactory.CreateConnection(targetConnectionString);
+        targetConn.Open();
+
+        await ToggleConstraintsAsync(targetConn, sourceInfo, false);
+        await ClearTablesAsync(targetConn, sourceInfo);
 
         return true;
     }
 
-    private async Task PrepareSchemasAsync(IDbConnection targetConn, List<string> sourceSchemas)
+    private static async Task ClearTablesAsync(IDbConnection targetConn, List<TableInfo> tablesInfo)
     {
-
+        foreach (var tableInfo in tablesInfo)
+        {
+            await targetConn.ExecuteAsync($"DELETE FROM [{tableInfo.Schema}].[{tableInfo.Name}]");        }
     }
 
-    private async Task PrepareTablesAsync(IDbConnection targetConn, List<string> sourceTables)
-    {
-
-    }
-
-    private async Task ClearTablesAsync(IDbConnection targetConn, List<string> sourceTables)
-    {
-
-    }
-
-    private async Task ToggleConstraintsAsync(IDbConnection conn, TableInfo table, bool enable)
+    private static async Task ToggleConstraintsAsync(IDbConnection conn, List<TableInfo> tablesInfo, bool enable)
     {
         var constraintCommand = enable ? "CHECK" : "NOCHECK";
         var triggerCommand = enable ? "ENABLE" : "DISABLE";
 
-        // Toggle Foreign Key Constraints
-        await conn.ExecuteAsync($"ALTER TABLE [{table.Schema}].[{table.Name}] {constraintCommand} CONSTRAINT ALL");
+        foreach (var tableInfo in tablesInfo)
+        {
+            // Toggle Foreign Key Constraints
+            await conn.ExecuteAsync($"ALTER TABLE [{tableInfo.Schema}].[{tableInfo.Name}] {constraintCommand} CONSTRAINT ALL");
 
-        // Toggle Triggers
-        await conn.ExecuteAsync($"{triggerCommand} TRIGGER ALL ON [{table.Schema}].[{table.Name}]");
-
-        /*
-        Console.WriteLine($"{(enable ? "Enabled" : "Disabled")} constraints/triggers for {table.Name}");
-    */
-    }}
+            // Toggle Triggers
+            await conn.ExecuteAsync($"{triggerCommand} TRIGGER ALL ON [{tableInfo.Schema}].[{tableInfo.Name}]");
+        }
+    }
+}

@@ -2,12 +2,12 @@
 using DbMigrator.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Data.Common;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.Services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
 builder.Services.AddScoped<IDbMigrator, MigrationService>();
+builder.Services.AddScoped<IDbPreparationService, DbPreparationService>();
+builder.Services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
 
 var host = builder.Build();
 

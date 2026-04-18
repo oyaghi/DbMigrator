@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace DbMigrator.Models;
+﻿namespace DbMigrator.Models;
 
 public class TableInfo
 {
