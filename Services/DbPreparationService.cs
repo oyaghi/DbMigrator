@@ -26,7 +26,7 @@ public class DbPreparationService(IDbConnectionFactory dbConnectionFactory) : ID
         }
     }
 
-    private static async Task ToggleConstraintsAsync(IDbConnection conn, List<TableInfo> tablesInfo, bool enable)
+    public async Task ToggleConstraintsAsync(IDbConnection conn, List<TableInfo> tablesInfo, bool enable)
     {
         var constraintCommand = enable ? "CHECK" : "NOCHECK";
         var triggerCommand = enable ? "ENABLE" : "DISABLE";
